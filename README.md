@@ -1,75 +1,75 @@
-# progress-service
+# Progress Service
 
-## Project Overview
+A Spring Boot microservice that processes and analyzes course progress events for an e-learning platform.  
+It validates and stores user course activity, then provides aggregated insights into course success rates.
 
-- progress-service is a Spring Boot microservice that processes course progress events for an e-learning platform.
-- It validates and stores events, provides chronological user event queries, and calculates aggregated course analysis 
-  metrics such as pass rates.
+---
 
-## Key Features
+## Features
 
-- Accepts course progress events (COURSE_STARTED, COURSE_PASSED, COURSE_FAILED)
-- Returns chronological events for a specific user
+| Endpoint | Description |
+|-----------|--------------|
+| **POST** `/v1/events` | Accepts and stores a new course progress event |
+| **GET** `/v1/events/user/{userId}` | Returns all events for a given user (chronologically sorted) |
+| **GET** `/v1/analysis/course/{courseId}` | Returns analysis for a course including pass/fail statistics and success rate |
 
-### Aggregates course metrics:
+---
 
-- Participants started, passed, failed
-- Pass rate with division-by-zero handling
+## Architecture Overview
 
-## In-memory database (H2) for persistence
-### Steps to check Dababase in local -
-- Run spring boot application locally through Bash Terminal - $ mvn spring-boot:run
-- Execute some API requests (insert data): $ curl -X POST http://localhost:8080/v1/events \
-  -H "Content-Type: application/json" \
-  -d '{
-  "userId": "user1",
-  "courseId": "course101",
-  "timestamp": "2025-10-23T10:00:00Z",
-  "eventType": "COURSE_STARTED"
-  }'
+**Tech Stack:**
+- **Java 17+**, **Spring Boot 3+**
+- **H2** in-memory database
+- **Spring Data JPA**
+- **JUnit 5 + Mockito** for testing
+- **Maven** for build and dependency management
+- **JaCoCo** for code coverage
+- **GitHub Actions** for CI/CD automation
+- **Docker** for containerization
 
-- DB browse: "http://localhost:8080/h2-console"
-- Jdbc url: jdbc:h2:mem:progressdb
-- username: sandeep
-- password: sandeep123
-- 
-## Automated testing with unit and integration tests
+**Design:**
+- Controller layer exposes REST endpoints
+- Service layer handles business logic (analysis, aggregation)
+- Repository layer persists data in H2
+- Tests are layered (unit + integration) for maintainability
 
-## CI/CD pipeline with GitHub Actions
+---
 
-## Dockerized for container deployment
+## Test Strategy
 
-## Microservice Endpoints
-### Method	   Endpoint	                         Description
--   POST	   /v1/events	                     Submit a new course progress event
--   GET	       /v1/events/user/{userId}	         Retrieve chronological events for a user
--   GET	       /v1/analysis/course/{courseId}	 Retrieve aggregated analysis for a course
+Testing was designed to ensure reliability and separation of concerns.
+
+### **Unit Tests**
+- Target: `CourseProgressService`
+- Repository layer mocked using **Mockito**
+- Focused on:
+    - Correct participant counting
+    - Accurate pass-rate calculation
+    - Handling of division-by-zero (no users passed/failed)
+
+### **Integration Tests**
+- Full context using **@SpringBootTest**
+- Uses **H2** in-memory DB
+- Verifies:
+    - REST endpoints’ responses and status codes
+    - JSON structure and data correctness
+    - Full data persistence flow (POST → GET → analysis)
+
+### **Coverage**
+- **JaCoCo** integrated via Maven plugin
+- Run locally:
+  ```bash
+  mvn clean test
+[INFO] --- jacoco:0.8.10:report (report) @ progress-service ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
 
 
-## Testing Strategy
-### Unit Tests
-
-- Focus on service layer logic, especially analysis metrics and pass rate calculations
-- Mocked repository layer using Mockito
-- Covered edge cases, including division-by-zero scenarios
-
-### Integration Tests
-
-- Focus on controller layer and API endpoints
-- Used @SpringBootTest to test against H2 in-memory database
-- Validated HTTP responses, JSON structure, and correctness of data processing
-
-### Test Coverage
-
-- Integrated JaCoCo Maven plugin to generate code coverage reports
-- Reports available under target/site/jacoco/index.html
-
-## CI/CD Pipeline
+## **CI/CD Pipeline**
 
 - Built using GitHub Actions
 - Automatically triggers on pushes and pull requests to main branch
 
-### Steps:
+### **Steps:**
 
 1. Checkout code
 2. Set up JDK 17 and Maven
@@ -77,18 +77,13 @@
 4. Upload test and JaCoCo coverage reports
 5. Docker build and push to GitHub Container Registry (ghcr.io) for main branch only
 
-### Workflow file: .github/workflows/ci.yml
-
-## Docker
 
 ### Multi-stage Dockerfile for efficient builds:
 
 - Build stage: compiles project with Maven
 - Runtime stage: runs Spring Boot jar on Java 17 JRE
 
-### Exposes port 8080
-
-## Build and run locally: In Bash Terminal 
+## Build and run locally: In Bash Terminal
 $ docker build -t progress-service:local .
 $ docker run -p 8080:8080 progress-service:local
 
@@ -114,5 +109,4 @@ $ docker run -p 8080:8080 progress-service:local
 
 ## License
 This project is for coding challenge submission purposes and does not have an external license.
-
 
